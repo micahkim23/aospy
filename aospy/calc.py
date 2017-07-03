@@ -41,6 +41,22 @@ ps = Var(
 )
 
 
+def _maybe_truncate_dim(arr, dim=internal_names.TIME_STR):
+    """Drop a given dimension if the data is constant in that dimension."""
+    try:
+        [xr.testing.assert_equal(arr.isel(**{dim: 0}),
+                                 arr.isel(**{dim: i}))
+         for i in range(len(arr[dim]))]
+    except AssertionError:
+        logging.debug("Unable to drop dimension '{0}' of array '{1}', due to "
+                      "it not being invariant.".format(dim, arr))
+        return arr
+    else:
+        logging.info("Dropped dimension '{0}' of array '{1}', due to "
+                     "it being invariant.".format(dim, arr))
+        return arr.drop(dim)
+
+
 class CalcInterface(object):
     """Interface to the Calc class."""
 
@@ -279,12 +295,15 @@ class Calc(object):
                 # Force coords to have desired name.
                 ds = ds.rename({list(ds_coord_name)[0]: name_int})
                 ds = ds.set_coords(name_int)
+                # Apply corrections if Run and Model attrs aren't identical.
                 if not np.array_equal(ds[name_int], model_attr):
-                    if np.allclose(ds[name_int], model_attr):
+                    if ds[name_int].shape != model_attr.shape:
+                        ds[name_int] = _maybe_truncate_dim(ds[name_int])
+                    elif np.allclose(ds[name_int], model_attr):
                         msg = ("Values for '{0}' are nearly (but not exactly) "
                                "the same in the Run {1} and the Model {2}.  "
                                "Therefore replacing Run's values with the "
-                               "model's.".format(name_int, self.run,
+                               "Model's.".format(name_int, self.run,
                                                  self.model))
                         logging.info(msg)
                         ds[name_int].values = model_attr.values
@@ -300,8 +319,9 @@ class Calc(object):
                 if model_attr is not None:
                     ds[name_int] = model_attr
                     ds = ds.set_coords(name_int)
-            if (self.dtype_in_vert == 'pressure' and
-                internal_names.PLEVEL_STR in ds.coords):
+            cond = (self.dtype_in_vert == 'pressure' and
+                    internal_names.PLEVEL_STR in ds.coords)
+            if cond:
                 self.pressure = ds.level
         return ds
 
@@ -496,8 +516,18 @@ class Calc(object):
         """Average a sub-yearly time-series over each year."""
         utils.times.assert_matching_time_coord(arr, dt)
         yr_str = internal_names.TIME_STR + '.year'
-        return ((arr*dt).groupby(yr_str).sum(internal_names.TIME_STR) /
-                dt.groupby(yr_str).sum(internal_names.TIME_STR))
+        mask_is_time_defined = (internal_names.TIME_STR in
+                                arr[internal_names.LAND_MASK_STR])
+        if mask_is_time_defined:
+            ds = arr.reset_coords(internal_names.LAND_MASK_STR)
+        else:
+            ds = arr
+        yr_avg = ((ds*dt).groupby(yr_str).sum(internal_names.TIME_STR) /
+                  dt.groupby(yr_str).sum(internal_names.TIME_STR))
+        if mask_is_time_defined:
+            return yr_avg.set_coords(internal_names.LAND_MASK_STR)[self.name]
+        else:
+            return yr_avg
 
     def _full_to_yearly_ts(self, arr, dt):
         """Average the full timeseries within each year."""

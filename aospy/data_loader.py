@@ -17,7 +17,7 @@ def _preprocess_and_rename_grid_attrs(func, **kwargs):
     user-specified preprocess function is called on the loaded Dataset before
     aospy's is applied.  An example for why this might be needed is output from
     the WRF model; one needs to add a CF-compliant units attribute to the time
-    coordinate of all input files, because it is not present by default.  
+    coordinate of all input files, because it is not present by default.
 
     Parameters
     ----------
@@ -175,7 +175,7 @@ def _load_data_from_disk(file_set, preprocess_func=lambda ds: ds, **kwargs):
     file_set : list or str
         List of paths to files or glob-string
     preprocess_func : function (optional)
-        Custom function to call before applying any aospy logic 
+        Custom function to call before applying any aospy logic
         to the loaded dataset
 
     Returns
@@ -286,9 +286,9 @@ class DictDataLoader(DataLoader):
     ...             '3hr': '000[4-6]0101.atmos_8xday.nc'}
     >>> data_loader = DictDataLoader(file_map)
 
-    If one wanted to correct a CF-incompliant units attribute on each Dataset 
-    read in, which depended on the ``intvl_in`` of the fileset one could 
-    define a ``preprocess_func`` which took into account the ``intvl_in`` 
+    If one wanted to correct a CF-incompliant units attribute on each Dataset
+    read in, which depended on the ``intvl_in`` of the fileset one could
+    define a ``preprocess_func`` which took into account the ``intvl_in``
     keyword argument.
 
     >>> def preprocess(ds, **kwargs):
