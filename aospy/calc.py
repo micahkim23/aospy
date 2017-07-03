@@ -330,6 +330,25 @@ class Calc(object):
         raise ValueError("name must be 'p' or 'dp':"
                          "'{}'".format(name))
 
+    def _get_pressure_from_eta_coords_cam(self, ps, name='p'):
+        """Get pressure at centers of CAM model native levels."""
+        pfull_coord = self.model[internal_names.PFULL_STR]
+        p_ref = self.model[internal_names.PREF_STR]
+        if name == 'p':
+            bk_full = self.model[internal_names.BK_FULL_STR]
+            pk_full = self.model[internal_names.PK_FULL_STR]
+            # We want pfull, but 'phalf_from_ps' gives correct logic so long as
+            # we pass it the full-level values.
+            return utils.vertcoord.phalf_from_ps(bk_full, pk_full*p_ref,
+                                                 ps, pfull_coord)
+        elif name == 'dp':
+            bk = self.model[internal_names.BK_STR]
+            pk = self.model[internal_names.PK_STR]
+            return utils.vertcoord.dp_from_ps(bk, pk*p_ref, ps, pfull_coord)
+        else:
+            raise ValueError("name must be 'p' or 'dp':"
+                             "'{}'".format(name))
+
     def _get_pressure_vals(self, var, start_date, end_date):
         """Get pressure array, whether sigma or standard levels."""
         try:

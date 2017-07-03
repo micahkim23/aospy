@@ -29,8 +29,11 @@ ETA_STR = 'sigma'
 PHALF_STR = 'phalf'
 PFULL_STR = 'pfull'
 PLEVEL_STR = 'level'
+PREF_STR = 'pref'
 PK_STR = 'pk'
 BK_STR = 'bk'
+PK_FULL_STR = 'pk_full'
+BK_FULL_STR = 'bk_full'
 ZSURF_STR = 'zsurf'
 
 # Time coordinates
@@ -56,11 +59,14 @@ GRID_ATTRS = OrderedDict(
      (ZSURF_STR, ('zsurf', 'HGT')),
      (SFC_AREA_STR, ('area', 'sfc_area')),
      (LAND_MASK_STR, ('land_mask', 'LANDFRAC', 'XLAND')),
-     (PK_STR, ('pk',)),
-     (BK_STR, ('bk',)),
-     (PHALF_STR, ('phalf',)),
-     (PFULL_STR, ('pfull',)),
+     (PK_STR, ('pk', 'hyai')),
+     (BK_STR, ('bk', 'hybi')),
+     (PK_FULL_STR, ('pk_full', 'hyam')),
+     (BK_FULL_STR, ('bk_full', 'hybm')),
+     (PHALF_STR, ('phalf', 'ilev')),
+     (PFULL_STR, ('pfull', 'lev')),
      (PLEVEL_STR, ('level', 'lev', 'plev')),
+     (PREF_STR, (PREF_STR,)),
      (TIME_STR, ('time', 'XTIME')),
      (TIME_WEIGHTS_STR, ('time_weights', 'average_DT',)),
      (TIME_BOUNDS_STR, ('time_bounds', 'time_bnds')),
