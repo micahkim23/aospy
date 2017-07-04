@@ -31,6 +31,7 @@ dp = Var(
 )
 ps = Var(
     name='ps',
+    alt_names=['PS'],
     units='Pa',
     domain='atmos',
     description='Surface pressure.',
@@ -409,6 +410,8 @@ class Calc(object):
         elif var.name in (internal_names.LAT_STR, internal_names.LON_STR,
                           internal_names.TIME_STR, internal_names.PLEVEL_STR,
                           internal_names.PK_STR, internal_names.BK_STR,
+                          internal_names.PK_FULL_STR,
+                          internal_names.BK_FULL_STR,
                           internal_names.SFC_AREA_STR):
             data = getattr(self.model, var.name)
         else:
