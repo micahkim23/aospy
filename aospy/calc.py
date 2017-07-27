@@ -11,8 +11,9 @@ import numpy as np
 import xarray as xr
 
 from .constants import Constant, grav
-from . import internal_names
 from . import utils
+from . import internal_names
+from .internal_names import (LAND_MASK_STR, LON_STR, SFC_AREA_STR)
 from .var import Var
 
 
@@ -202,9 +203,9 @@ class Calc(object):
     ARR_XARRAY_NAME = 'aospy_result'
 
     _grid_coords = [internal_names.LAT_STR, internal_names.LAT_BOUNDS_STR,
-                    internal_names.LON_STR, internal_names.LON_BOUNDS_STR,
-                    internal_names.ZSURF_STR, internal_names.SFC_AREA_STR,
-                    internal_names.LAND_MASK_STR, internal_names.PK_STR,
+                    LON_STR, internal_names.LON_BOUNDS_STR,
+                    internal_names.ZSURF_STR, SFC_AREA_STR,
+                    LAND_MASK_STR, internal_names.PK_STR,
                     internal_names.BK_STR, internal_names.PHALF_STR,
                     internal_names.PFULL_STR, internal_names.PLEVEL_STR]
     _grid_attrs = OrderedDict([(key, internal_names.GRID_ATTRS[key])
@@ -407,12 +408,13 @@ class Calc(object):
                 return self._to_desired_dates(data)
             return data
         # Get grid, time, etc. arrays directly from model object
-        elif var.name in (internal_names.LAT_STR, internal_names.LON_STR,
+        elif var.name in (internal_names.LAT_STR, LON_STR,
                           internal_names.TIME_STR, internal_names.PLEVEL_STR,
                           internal_names.PK_STR, internal_names.BK_STR,
                           internal_names.PK_FULL_STR,
                           internal_names.BK_FULL_STR,
-                          internal_names.SFC_AREA_STR):
+                          SFC_AREA_STR,
+                          LAND_MASK_STR):
             data = getattr(self.model, var.name)
         else:
             cond_pfull = ((not hasattr(self, internal_names.PFULL_STR))
@@ -499,10 +501,17 @@ class Calc(object):
     def _compute_full_ts(self, data, monthly_mean=False, zonal_asym=False):
         """Perform calculation and create yearly timeseries at each point."""
         # Get results at each desired timestep and spatial point.
-        # Here we need to provide file read-in dates (NOT xarray dates)
         full_ts, dt = self._compute(data, monthly_mean=monthly_mean)
+        # Re-introduce any coords that got dropped.
+        if LON_STR not in full_ts:
+            for coord in (SFC_AREA_STR, LAND_MASK_STR):
+                if coord not in full_ts:
+                    coord_arr = data[0][coord]
+                    full_ts = full_ts.assign_coords(
+                        **{coord: coord_arr.mean(dim=LON_STR)}
+                    )
         if zonal_asym:
-            full_ts = full_ts - full_ts.mean(internal_names.LON_STR)
+            full_ts = full_ts - full_ts.mean(LON_STR)
         # Vertically integrate.
         vert_types = ('vert_int', 'vert_av')
         if self.dtype_out_vert in vert_types and self.var.def_vert:
@@ -520,15 +529,15 @@ class Calc(object):
         utils.times.assert_matching_time_coord(arr, dt)
         yr_str = internal_names.TIME_STR + '.year'
         mask_is_time_defined = (internal_names.TIME_STR in
-                                arr[internal_names.LAND_MASK_STR])
+                                arr[LAND_MASK_STR])
         if mask_is_time_defined:
-            ds = arr.reset_coords(internal_names.LAND_MASK_STR)
+            ds = arr.reset_coords(LAND_MASK_STR)
         else:
             ds = arr
         yr_avg = ((ds*dt).groupby(yr_str).sum(internal_names.TIME_STR) /
                   dt.groupby(yr_str).sum(internal_names.TIME_STR))
         if mask_is_time_defined:
-            return yr_avg.set_coords(internal_names.LAND_MASK_STR)[self.name]
+            return yr_avg.set_coords(LAND_MASK_STR)[self.name]
         else:
             return yr_avg
 
@@ -568,23 +577,25 @@ class Calc(object):
         # Loop over the regions, performing the calculation.
         reg_dat = {}
         for reg in self.region:
-            # Just pass along the data if averaged already.
-            if 'av' in self.dtype_in_time:
-                data_out = reg.ts(arr)
-            # Otherwise perform the calculation.
-            else:
-                method = getattr(reg, func)
-                data_out = method(arr)
-                if bool_pfull:
-                    # Don't apply e.g. standard deviation to coordinates.
-                    if func not in ['av', 'ts']:
-                        method = reg.ts
-                    # Convert Pa to hPa
-                    coord = method(pfull) * 1e-2
-                    data_out = data_out.assign_coords(
-                        **{reg.name + '_pressure': coord}
-                    )
-            reg_dat.update(**{reg.name: data_out})
+            # Skip lon-confined regions if data isn't lon-defined.
+            if not (LON_STR not in arr.coords and reg.mask_bounds[0][1] != (0, 360)):
+                # If data is averaged already, pass it along.
+                if 'av' in self.dtype_in_time:
+                    data_out = reg.ts(arr)
+                # Otherwise perform the calculation.
+                else:
+                    method = getattr(reg, func)
+                    data_out = method(arr)
+                    if bool_pfull:
+                        # Don't apply e.g. standard deviation to coordinates.
+                        if func not in ['av', 'ts']:
+                            method = reg.ts
+                        # Convert Pa to hPa
+                        coord = method(pfull) * 1e-2
+                        data_out = data_out.assign_coords(
+                            **{reg.name + '_pressure': coord}
+                        )
+                reg_dat.update(**{reg.name: data_out})
         return OrderedDict(sorted(reg_dat.items(), key=lambda t: t[0]))
 
     def _apply_all_time_reductions(self, full_ts, monthly_ts, eddy_ts):
