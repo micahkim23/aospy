@@ -1,16 +1,17 @@
 """Functionality pertaining to aggregating data over geographical regions."""
 import logging
 
-from .internal_names import LAT_STR, LON_STR, LAND_MASK_STR
+import numpy as np
+
+from . import internal_names
 
 
 def _add_to_mask(data, lat_bounds, lon_bounds):
     """Add mask spanning given lat-lon rectangle."""
-    mask_lat = ((data[LAT_STR] > lat_bounds[0]) &
-                (data[LAT_STR] < lat_bounds[1]))
-    mask_lon = ((data[LON_STR] > lon_bounds[0]) &
-                (data[LON_STR] < lon_bounds[1]))
-    return mask_lat & mask_lon
+    mask_lat = ((data[internal_names.LAT_STR] > lat_bounds[0]) &
+                (data[internal_names.LAT_STR] < lat_bounds[1]))
+    return mask_lat & ((data[internal_names.LON_STR] > lon_bounds[0]) &
+                       (data[internal_names.LON_STR] < lon_bounds[1]))
 
 
 def _make_mask(data, mask_bounds):
@@ -26,7 +27,7 @@ def _get_land_mask(data, do_land_mask):
     if not do_land_mask:
         return 1
     try:
-        land_mask = data[LAND_MASK_STR].copy()
+        land_mask = data.land_mask.copy()
     except AttributeError:
         # TODO: Implement aospy built-in land mask to default to.
         msg = ("No land mask found.  Using empty mask, which amounts to "
@@ -39,7 +40,7 @@ def _get_land_mask(data, do_land_mask):
         percent_bool = land_mask.units.lower() in ('%', 'percent')
         logging.debug("Converting land mask from 0-100 to 0.0-1.0")
     except AttributeError:
-        # TODO: logic fails for the edge case where no grid cell is 100% land.
+        # Wrong for the edge case where no grid cell is 100% land.
         percent_bool = land_mask.max() == 100
     if percent_bool:
         land_mask *= 0.01
@@ -57,7 +58,7 @@ def _get_land_mask(data, do_land_mask):
 
 def _sum_over_lat_lon(arr):
     """Sum an array over the latitude and longitude dimensions."""
-    return arr.sum(LAT_STR).sum(LON_STR)
+    return arr.sum(internal_names.LAT_STR).sum(internal_names.LON_STR)
 
 
 class Region(object):
@@ -167,9 +168,14 @@ class Region(object):
         data_masked = self.mask_var(data)
         sfc_area = data.sfc_area
         land_mask = _get_land_mask(data, self.do_land_mask)
-        weights = _sum_over_lat_lon((self.mask_var(sfc_area)*land_mask))
+
+        weights = self.mask_var(sfc_area) * land_mask
+        # Mask weights where data values are initially invalid in addition
+        # to applying the region mask.
+        weights = weights.where(np.isfinite(data))
+        sum_weights = _sum_over_lat_lon(weights)
         return (_sum_over_lat_lon(data_masked*sfc_area*land_mask) /
-                weights)
+                sum_weights)
 
     def av(self, data):
         """Time average of region-average time-series."""
