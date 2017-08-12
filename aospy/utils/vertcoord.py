@@ -6,6 +6,7 @@ import xarray as xr
 
 from ..constants import grav
 from .. import internal_names
+from ..internal_names import PHALF_STR, PFULL_STR, PLEVEL_STR
 
 
 def to_radians(arr, is_delta=False):
@@ -64,13 +65,11 @@ def replace_coord(arr, old_dim, new_dim, new_coord):
 
 def to_pfull_from_phalf(arr, pfull_coord):
     """Compute data at full pressure levels from values at half levels."""
-    phalf_top = arr.isel(**{internal_names.PHALF_STR: slice(1, None)})
-    phalf_top = replace_coord(phalf_top, internal_names.PHALF_STR,
-                              internal_names.PFULL_STR, pfull_coord)
+    phalf_top = arr.isel(**{PHALF_STR: slice(1, None)})
+    phalf_top = replace_coord(phalf_top, PHALF_STR, PFULL_STR, pfull_coord)
 
-    phalf_bot = arr.isel(**{internal_names.PHALF_STR: slice(None, -1)})
-    phalf_bot = replace_coord(phalf_bot, internal_names.PHALF_STR,
-                              internal_names.PFULL_STR, pfull_coord)
+    phalf_bot = arr.isel(**{PHALF_STR: slice(None, -1)})
+    phalf_bot = replace_coord(phalf_bot, PHALF_STR, PFULL_STR, pfull_coord)
     return 0.5*(phalf_bot + phalf_top)
 
 
@@ -95,9 +94,8 @@ def pfull_from_ps(bk, pk, ps, pfull_coord):
 
 def d_deta_from_phalf(arr, pfull_coord):
     """Compute pressure level thickness from half level pressures."""
-    d_deta = arr.diff(dim=internal_names.PHALF_STR, n=1)
-    return replace_coord(d_deta, internal_names.PHALF_STR,
-                         internal_names.PFULL_STR, pfull_coord)
+    d_deta = arr.diff(dim=PHALF_STR, n=1)
+    return replace_coord(d_deta, PHALF_STR, PFULL_STR, pfull_coord)
 
 
 def d_deta_from_pfull(arr):
@@ -116,17 +114,14 @@ def d_deta_from_pfull(arr):
     deriv : xarray.DataArray with the derivative along 'pfull' computed via
             2nd order centered differencing.
     """
-    right = arr[{internal_names.PFULL_STR: slice(2, None, None)}].values
-    left = arr[{internal_names.PFULL_STR: slice(0, -2, 1)}].values
-    deriv = xr.DataArray(np.zeros(arr.shape), dims=arr.dims,
-                         coords=arr.coords)
-    deriv[{internal_names.PFULL_STR: slice(1, -1, 1)}] = (right - left) / 2.
-    deriv[{internal_names.PFULL_STR: 0}] = (
-        arr[{internal_names.PFULL_STR: 1}].values -
-        arr[{internal_names.PFULL_STR: 0}].values)
-    deriv[{internal_names.PFULL_STR: -1}] = (
-        arr[{internal_names.PFULL_STR: -1}].values -
-        arr[{internal_names.PFULL_STR: -2}].values)
+    right = arr[{PFULL_STR: slice(2, None, None)}].values
+    left = arr[{PFULL_STR: slice(0, -2, 1)}].values
+    deriv = xr.DataArray(np.zeros(arr.shape), dims=arr.dims, coords=arr.coords)
+    deriv[{PFULL_STR: slice(1, -1, 1)}] = (right - left) / 2.
+    deriv[{PFULL_STR: 0}] = (arr[{PFULL_STR: 1}].values -
+                             arr[{PFULL_STR: 0}].values)
+    deriv[{PFULL_STR: -1}] = (arr[{PFULL_STR: -1}].values -
+                              arr[{PFULL_STR: -2}].values)
     return deriv
 
 
@@ -153,14 +148,13 @@ def get_dim_name(arr, names):
 
 
 def vert_coord_name(arr):
-    return get_dim_name(arr, [internal_names.PLEVEL_STR,
-                              internal_names.PFULL_STR])
+    return get_dim_name(arr, [PFULL_STR, PLEVEL_STR])
 
 
 def int_dp_g(arr, dp):
     """Mass weighted integral."""
-    return integrate(arr, to_pascal(dp, is_dp=True),
-                     vert_coord_name(dp)) / grav.value
+    return integrate(arr, to_pascal(dp, is_dp=True), dim=vert_coord_name(dp),
+                     is_pressure=True) / grav.value
 
 
 def dp_from_p(p, ps, p_top=0., p_bot=1.1e5):
@@ -179,7 +173,7 @@ def dp_from_p(p, ps, p_top=0., p_bot=1.1e5):
     level's upper edge.  This masks out more levels than the
 
     """
-    p_str = get_dim_name(p, (internal_names.PLEVEL_STR, 'plev'))
+    p_str = get_dim_name(p, (PLEVEL_STR, 'plev'))
     p_vals = to_pascal(p.values.copy())
 
     # Layer edges are halfway between the given pressure levels.
