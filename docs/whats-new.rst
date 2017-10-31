@@ -11,6 +11,9 @@ v0.3 (unreleased)
 Breaking Changes
 ~~~~~~~~~~~~~~~~
 
+- Deprecate ``Constant`` class, so now we have a ``_constants.py`` file
+  containing commonly used constants. (fixes :issue:`50` via :pull:`223`).
+  By `Micah Kim <https://github.com/micahkim23>`_.
 - Deprecate ``Units`` class, so now the ``units`` attribute of the
   ``Var`` class is a string. (fixes :issue:`50` via :pull:`222`).
   By `Micah Kim <https://github.com/micahkim23>`_.

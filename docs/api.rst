@@ -192,20 +192,10 @@ automate
 Constants
 =========
 
-aospy provides the classes :py:class:`Constant`
-for representing, respectively, physical constants (e.g. Earth's
-gravitational acceleration at the surface = 9.81 m/s^2).
-
-aospy comes with several commonly used constants saved within the
-:py:class:`constants` module in which the :py:class:`Constant` class
-is also defined.
-
-constants
----------
-
-.. automodule:: aospy.constants
-    :members:
-    :undoc-members:
+aospy comes with several commonly used physical constants saved
+within the :py:class:`_constants` module (e.g. Earth's gravitational
+acceleration at the surface = 9.81 m/s^2). These constants are
+represented as xarray.DataArray objects.
 
 Utilities
 =========
