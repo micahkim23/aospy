@@ -468,7 +468,7 @@ class Calc(object):
                                                  self.end_date)
             )
             if self.dtype_out_vert == 'vert_av':
-                full_ts *= (GRAV_EARTH.data / self._to_desired_dates(self._ps_data))
+                full_ts *= (GRAV_EARTH / self._to_desired_dates(self._ps_data))
         return full_ts, dt
 
     def _full_to_yearly_ts(self, arr, dt):

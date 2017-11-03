@@ -160,7 +160,7 @@ def vert_coord_name(arr):
 def int_dp_g(arr, dp):
     """Mass weighted integral."""
     return integrate(arr, to_pascal(dp, is_dp=True),
-                     vert_coord_name(dp)) / GRAV_EARTH.data
+                     vert_coord_name(dp)) / GRAV_EARTH
 
 
 def dp_from_p(p, ps, p_top=0., p_bot=1.1e5):

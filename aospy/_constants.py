@@ -1,4 +1,4 @@
-"""commonly used physical constants"""
+"""Physical constants used in aospy"""
 import xarray as xr
 
 

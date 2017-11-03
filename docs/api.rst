@@ -189,14 +189,6 @@ automate
     :members:
     :undoc-members:
 
-Constants
-=========
-
-aospy comes with several commonly used physical constants saved
-within the :py:class:`_constants` module (e.g. Earth's gravitational
-acceleration at the surface = 9.81 m/s^2). These constants are
-represented as xarray.DataArray objects.
-
 Utilities
 =========
 
