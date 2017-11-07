@@ -16,6 +16,11 @@ matrix:
       env: CONDA_ENV=py35
     - python: 3.6
       env: CONDA_ENV=py36
+    - python: 3.6
+      env: CONDA_ENV=py36-xarray-dev
+    allow_failures:
+    - python: 3.6
+      env: CONDA_ENV=py36-xarray-dev
 
 before_install:
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then

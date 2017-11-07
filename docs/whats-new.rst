@@ -28,6 +28,9 @@ Corrected link to documentation badge on repository main page (:pull:213). By Da
 Enhancements
 ~~~~~~~~~~~~
 
+- Create Travis branch that tests against the xarray dev branch. This
+  Travis branch is allowed to have failures. (closes :issue:`224` via
+  :pull: `226`). By `Micah Kim <https://github.com/micahkim23>`_.
 - Remove potentially confusing attributes from example netcdf files.
   (closes :issue:`214` via :pull:`216`). By `Micah Kim
   <https://github.com/micahkim23>`_.
