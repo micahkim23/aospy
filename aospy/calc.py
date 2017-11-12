@@ -524,7 +524,7 @@ class Calc(object):
                         **{reg.name + '_pressure': coord}
                     )
             reg_dat.update(**{reg.name: data_out})
-        return OrderedDict(sorted(reg_dat.items(), key=lambda t: t[0]))
+        return xr.Dataset(reg_dat)
 
     def _apply_all_time_reductions(self, full_ts, monthly_ts, eddy_ts):
         """Apply all requested time reductions to the data."""
@@ -587,6 +587,7 @@ class Calc(object):
         reduced = self._apply_all_time_reductions(full, monthly, eddy)
         logging.info("Writing desired gridded outputs to disk.")
         for dtype_time, data in reduced.items():
+            self.addAttrs(data)
             self.save(data, dtype_time, dtype_out_vert=self.dtype_out_vert,
                       save_files=True, write_to_tar=write_to_tar)
         return self
@@ -601,8 +602,7 @@ class Calc(object):
                 reg_data = xr.open_dataset(path)
             except (EOFError, RuntimeError, IOError):
                 reg_data = xr.Dataset()
-            # Add the new data to the dictionary or Dataset.
-            # Same method works for both.
+            # Add the new data to the Dataset.
             reg_data.update(data)
             data_out = reg_data
         else:
@@ -767,3 +767,19 @@ class Calc(object):
         if plot_units:
             data = self.var.to_plot_units(data, dtype_vert=dtype_out_vert)
         return data
+
+    def addAttrs(self, data):
+        if (isinstance(data, xr.DataArray)):
+            self.addAttrsDataArray(data)
+        else:
+            for name, da in data.data_vars.items():
+                self.addAttrsDataArray(da)
+
+    def addAttrsDataArray(self, data):
+        if self.var.units != '':
+            if self.var.dtype_out_vert == 'vert_int':
+                data.attrs['units'] = '(vertical integral of {0}): {0} kg m^-2)'.format(self.var.units)
+            else:
+                data.attrs['units'] = self.var.units
+        if self.var.description != '':
+            data.attrs['description'] = self.var.description
