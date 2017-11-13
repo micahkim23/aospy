@@ -587,7 +587,7 @@ class Calc(object):
         reduced = self._apply_all_time_reductions(full, monthly, eddy)
         logging.info("Writing desired gridded outputs to disk.")
         for dtype_time, data in reduced.items():
-            self.addAttrs(data)
+            self._add_units_and_description_attrs(data)
             self.save(data, dtype_time, dtype_out_vert=self.dtype_out_vert,
                       save_files=True, write_to_tar=write_to_tar)
         return self
@@ -602,7 +602,6 @@ class Calc(object):
                 reg_data = xr.open_dataset(path)
             except (EOFError, RuntimeError, IOError):
                 reg_data = xr.Dataset()
-            # Add the new data to the Dataset.
             reg_data.update(data)
             data_out = reg_data
         else:
@@ -768,18 +767,18 @@ class Calc(object):
             data = self.var.to_plot_units(data, dtype_vert=dtype_out_vert)
         return data
 
-    def addAttrs(self, data):
-        if (isinstance(data, xr.DataArray)):
-            self.addAttrsDataArray(data)
+    def _add_units_and_description_attrs(self, data):
+        if isinstance(data, xr.DataArray):
+            self._add_units_and_description_attrs_da(data)
         else:
             for name, da in data.data_vars.items():
-                self.addAttrsDataArray(da)
+                self._add_units_and_description_attrs_da(da)
 
-    def addAttrsDataArray(self, data):
-        if self.var.units != '':
-            if self.var.dtype_out_vert == 'vert_int':
-                data.attrs['units'] = '(vertical integral of {0}): {0} kg m^-2)'.format(self.var.units)
-            else:
-                data.attrs['units'] = self.var.units
-        if self.var.description != '':
-            data.attrs['description'] = self.var.description
+    def _add_units_and_description_attrs_da(self, data):
+        if self.var.dtype_out_vert == 'vert_int':
+            units = '(vertical integral of {0}): {0} kg m^-2)'
+            data.attrs['units'] = units.format(self.var.units)
+        else:
+            units = '(vertical integral of quantity with unspecified units)'
+            data.attrs['units'] = units
+        data.attrs['description'] = self.var.description
