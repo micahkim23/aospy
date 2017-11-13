@@ -775,10 +775,11 @@ class Calc(object):
                 self._add_units_and_description_attrs_da(da)
 
     def _add_units_and_description_attrs_da(self, data):
-        if self.var.dtype_out_vert == 'vert_int':
-            units = '(vertical integral of {0}): {0} kg m^-2)'
-            data.attrs['units'] = units.format(self.var.units)
-        else:
-            units = '(vertical integral of quantity with unspecified units)'
-            data.attrs['units'] = units
+        units = self.var.units
+        if self.dtype_out_vert == 'vert_int':
+            if units != '':
+                units = '(vertical integral of {0}): {0} kg m^-2)'.format(units)
+            else:
+                units = '(vertical integral of quantity with unspecified units)'
+        data.attrs['units'] = units
         data.attrs['description'] = self.var.description

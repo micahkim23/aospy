@@ -5,6 +5,8 @@ from os.path import isfile
 import shutil
 import unittest
 
+import xarray as xr
+
 from aospy.calc import Calc, CalcInterface
 from .data.objects.examples import (
     example_proj, example_model, example_run, condensation_rain,
@@ -37,6 +39,10 @@ class TestCalcBasic(unittest.TestCase):
         calc.compute()
         assert isfile(calc.path_out['av'])
         assert isfile(calc.path_tar_out)
+        data = xr.open_mfdataset(calc.path_out['av'], decode_times=False)
+        for name, da in data.data_vars.items():
+            assert 'units' in da.attrs
+            assert 'description' in da.attrs
 
     def test_annual_ts(self):
         calc_int = CalcInterface(intvl_out='ann',
@@ -92,6 +98,10 @@ class TestCalcBasic(unittest.TestCase):
         calc.compute()
         assert isfile(calc.path_out['reg.av'])
         assert isfile(calc.path_tar_out)
+        data = xr.open_mfdataset(calc.path_out['reg.av'], decode_times=False)
+        for name, da in data.data_vars.items():
+            assert 'units' in da.attrs
+            assert 'description' in da.attrs
 
     def test_simple_reg_ts(self):
         calc_int = CalcInterface(intvl_out='ann',
