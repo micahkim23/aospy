@@ -401,6 +401,14 @@ and the results of each output type
 
 .. note::
 
+    Notice that the variable's name and description have been copied
+    to the resulting Dataset (and hence also to the netCDF file saved
+    to disk). This enables you to better understand what the physical
+    quantity is, even if you don't have the original Var definition
+    on hand.
+
+.. note::
+
    You may have noticed that ``subset_...`` and ``raw_...``
    coordinates have years 1678 and later, when our data was from model
    years 4 through 6.  This is because `technical details upstream
