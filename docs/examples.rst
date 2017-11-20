@@ -395,7 +395,7 @@ Each :py:class:`aospy.Calc` object includes the paths to the output
 
 and the results of each output type
 
-.. ipython:: pythoon
+.. ipython:: python
 
     calcs[0].data_out
 
