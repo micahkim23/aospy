@@ -404,7 +404,7 @@ and the results of each output type
     Notice that the variable's name and description have been copied
     to the resulting Dataset (and hence also to the netCDF file saved
     to disk). This enables you to better understand what the physical
-    quantity is, even if you don't have the original `Var` definition
+    quantity is, even if you don't have the original ``Var`` definition
     on hand.
 
 .. note::
