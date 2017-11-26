@@ -14,6 +14,7 @@ from .data.objects.examples import (
     precip, sphum, globe, sahel
 )
 
+
 def _test_output_attrs(calc, dtype_out):
     data = xr.open_dataset(calc.path_out[dtype_out])
     expected_units = calc.var.units
@@ -29,10 +30,12 @@ def _test_output_attrs(calc, dtype_out):
         assert expected_units == arr.attrs['units']
         assert expected_description == arr.attrs['description']
 
+
 def _test_files_and_attrs(calc, dtype_out):
     assert isfile(calc.path_out[dtype_out])
     assert isfile(calc.path_tar_out)
     _test_output_attrs(calc, dtype_out)
+
 
 class TestCalcBasic(unittest.TestCase):
     def setUp(self):
@@ -126,6 +129,7 @@ class TestCalcBasic(unittest.TestCase):
         calc.compute()
         _test_files_and_attrs(calc, 'reg.av')
 
+
 class TestCalcComposite(TestCalcBasic):
     def setUp(self):
         self.test_params = {
@@ -155,6 +159,7 @@ class TestCalc3D(TestCalcBasic):
             'dtype_out_vert': 'vert_int'
         }
 
+
 @pytest.mark.parametrize(
     ('units', 'description', 'dtype_out_vert', 'expected_units',
      'expected_description'),
@@ -176,7 +181,7 @@ class TestCalc3D(TestCalcBasic):
       '(vertical integral of m): m kg m^-2)', 'rain')]
 )
 def test_attrs(units, description, dtype_out_vert, expected_units,
-                expected_description):
+               expected_description):
     da = xr.DataArray(None)
     ds = xr.Dataset({'bar': 'foo', 'boo': 'baz'})
     da = _add_metadata_as_attrs(da, units, description, dtype_out_vert)
@@ -186,6 +191,7 @@ def test_attrs(units, description, dtype_out_vert, expected_units,
     for name, arr in ds.data_vars.items():
         assert expected_units == arr.attrs['units']
         assert expected_description == arr.attrs['description']
+
 
 if __name__ == '__main__':
     unittest.main()
