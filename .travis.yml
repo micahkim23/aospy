@@ -42,6 +42,6 @@ install:
 
 script:
   - py.test aospy --cov=aospy --cov-report term-missing --verbose
-  - flake8 -j auto xarray
+  - flake8 -j auto aospy
 after_success:
   - coveralls
