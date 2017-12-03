@@ -243,8 +243,7 @@ class CalcSuite(object):
         for spec in specs:
             spec['dtype_out_time'] = _prune_invalid_time_reductions(spec)
 
-        return [Calc(CalcInterface(**sp)) for sp in
-                specs]
+        return [Calc(CalcInterface(**sp)) for sp in specs]
 
 
 def _prune_invalid_time_reductions(spec):
