@@ -22,6 +22,7 @@ _RUNS_STR = 'runs'
 _REGIONS_STR = 'regions'
 _VARIABLES_STR = 'variables'
 _TAG_ATTR_MODIFIERS = dict(all='', default='default_')
+_TIME_DEFINED_REDUCTIONS = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
 
 
 def _get_attr_by_tag(obj, tag, attr_name):
@@ -237,8 +238,30 @@ class CalcSuite(object):
 
     def create_calcs(self):
         """Generate a Calc object for each requested parameter combination."""
+        specs = self._combine_core_aux_specs()
+
+        for spec in specs:
+            spec['dtype_out_time'] = _prune_invalid_time_reductions(spec)
+
         return [Calc(CalcInterface(**sp)) for sp in
-                self._combine_core_aux_specs()]
+                specs]
+
+
+def _prune_invalid_time_reductions(spec):
+    valid_reductions = []
+    if not spec['var'].def_time:
+        for reduction in spec['dtype_out_time']:
+            if reduction not in _TIME_DEFINED_REDUCTIONS:
+                valid_reductions.append(reduction)
+            else:
+                msg = ("Var {0} has no time dimension "
+                       "for the given time reduction "
+                       "{1} so this calculation will "
+                       "be skipped".format(spec['var'].name, reduction))
+                logging.info(msg)
+    else:
+        valid_reductions = spec['dtype_out_time']
+    return valid_reductions
 
 
 def _compute_or_skip_on_error(calc, compute_kwargs):

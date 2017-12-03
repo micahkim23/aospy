@@ -39,6 +39,7 @@ ps = Var(
     def_lat=True,
     def_lon=True,
 )
+_TIME_DEFINED_REDUCTIONS = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
 
 
 class CalcInterface(object):
@@ -172,6 +173,14 @@ class CalcInterface(object):
             domain=self.domain, intvl_in=self.intvl_in,
             dtype_in_vert=self.dtype_in_vert,
             dtype_in_time=self.dtype_in_time, intvl_out=self.intvl_out)
+
+        if not var.def_time:
+            for reduction in dtype_out_time:
+                if reduction in _TIME_DEFINED_REDUCTIONS:
+                    msg = ("Var {0} has no time dimension "
+                           "for the given time reduction "
+                           "{1}".format(var.name, reduction))
+                    logging.info(msg)
 
 
 class Calc(object):

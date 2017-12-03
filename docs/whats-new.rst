@@ -51,6 +51,9 @@ Bug Fixes
   writing to netCDF files to avoid bugs when using ``libnetcdf``
   version 4.5.0 (:pull:`235`).  By `Spencer Hill
   <https://github.com/spencerahill>`_.
+- Skip ``Calc`` object calculation that computes time average of
+  a variable with no time dimension. (closes :issue:`202`
+  via :pull:`242`). By `Micah Kim <https://github.com/micahkim23>`_.
 
 
 Testing
