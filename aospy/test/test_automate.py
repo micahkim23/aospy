@@ -2,6 +2,7 @@ from multiprocessing import cpu_count
 from os.path import isfile
 import shutil
 import sys
+import itertools
 
 import distributed
 import pytest
@@ -13,7 +14,8 @@ from aospy.automate import (_get_attr_by_tag, _permuted_dicts_of_specs,
                             _user_verify, CalcSuite, _MODELS_STR, _RUNS_STR,
                             _VARIABLES_STR, _REGIONS_STR,
                             _compute_or_skip_on_error, submit_mult_calcs,
-                            _n_workers_for_local_cluster)
+                            _n_workers_for_local_cluster,
+                            _prune_invalid_time_reductions)
 from . import requires_pytest_catchlog
 from .data.objects import examples as lib
 from .data.objects.examples import (
@@ -352,3 +354,25 @@ class TestCalcSuite(object):
         assert len(actual) == len(expected)
         for act in actual:
             assert act in expected
+
+
+@pytest.mark.parametrize(
+    ('var'),
+    [(precip_largescale),
+     (condensation_rain)]
+)
+def test_prune_invalid_time_reductions(var):
+    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts', 'None']
+    spec = {
+        'var': var
+    }
+    for i in range(1, 8):
+        for time_option in list(itertools.permutations(time_options, i)):
+            spec['dtype_out_time'] = time_option
+            if spec['var'].def_time:
+                assert _prune_invalid_time_reductions(spec) == time_option
+            else:
+                if 'None' in time_option:
+                    assert _prune_invalid_time_reductions(spec) == ['None']
+                else:
+                    assert _prune_invalid_time_reductions(spec) == []
