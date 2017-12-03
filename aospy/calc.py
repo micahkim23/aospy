@@ -174,12 +174,12 @@ class CalcInterface(object):
             dtype_in_vert=self.dtype_in_vert,
             dtype_in_time=self.dtype_in_time, intvl_out=self.intvl_out)
 
-        if not var.def_time:
-            for reduction in dtype_out_time:
+        if not self.def_time:
+            for reduction in self.dtype_out_time:
                 if reduction in _TIME_DEFINED_REDUCTIONS:
                     msg = ("Var {0} has no time dimension "
                            "for the given time reduction "
-                           "{1}".format(var.name, reduction))
+                           "{1}".format(self.name, reduction))
                     raise ValueError(msg)
 
 

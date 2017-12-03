@@ -5,13 +5,14 @@ from os.path import isfile
 import shutil
 import unittest
 import pytest
+import itertools
 
 import xarray as xr
 
 from aospy.calc import Calc, CalcInterface, _add_metadata_as_attrs
 from .data.objects.examples import (
-    example_proj, example_model, example_run, condensation_rain,
-    precip, sphum, globe, sahel
+    example_proj, example_model, example_run, precip_largescale,
+    condensation_rain, precip, sphum, globe, sahel
 )
 
 
@@ -158,6 +159,32 @@ class TestCalc3D(TestCalcBasic):
             'dtype_in_vert': 'sigma',
             'dtype_out_vert': 'vert_int'
         }
+
+
+test_params = {
+        'proj': example_proj,
+        'model': example_model,
+        'run': example_run,
+        'var': precip_largescale,
+        'date_range': 'default',
+        'intvl_out': 1,
+}
+
+
+@pytest.mark.fixture
+def test_calc_object_no_time_options():
+    test_params['dtype_out_time'] = None
+    CalcInterface(**test_params)
+
+
+@pytest.mark.fixture
+def test_calc_object_time_options():
+    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
+    for i in range(1, 7):
+        for time_option in list(itertools.permutations(time_options, i)):
+            test_params['dtype_out_time'] = time_option
+            with pytest.raises(ValueError):
+                CalcInterface(**test_params)
 
 
 @pytest.mark.parametrize(

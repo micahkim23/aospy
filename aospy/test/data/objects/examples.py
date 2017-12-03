@@ -47,6 +47,13 @@ example_proj = Proj(
     models=[example_model]
 )
 
+precip_largescale = Var(
+    name='precip_largescale',
+    alt_names=('condensation_rain',),
+    def_time=False,
+    description='Precipitation generated via grid-scale condensation',
+)
+
 condensation_rain = Var(
     name='condensation_rain',
     alt_names=('prec_ls',),
