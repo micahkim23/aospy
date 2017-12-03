@@ -180,7 +180,7 @@ class CalcInterface(object):
                     msg = ("Var {0} has no time dimension "
                            "for the given time reduction "
                            "{1}".format(var.name, reduction))
-                    logging.info(msg)
+                    raise ValueError(msg)
 
 
 class Calc(object):
