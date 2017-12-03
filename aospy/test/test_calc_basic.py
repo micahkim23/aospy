@@ -171,20 +171,40 @@ test_params = {
 }
 
 
-@pytest.mark.fixture
-def test_calc_object_no_time_options():
-    test_params['dtype_out_time'] = None
+@pytest.mark.parametrize(
+    ('dtype_out_time'),
+    [(None),
+     ('None')]
+)
+def test_calc_object_no_time_options(dtype_out_time):
+    test_params['dtype_out_time'] = dtype_out_time
     CalcInterface(**test_params)
+
+
+@pytest.mark.parametrize(
+    ('dtype_out_time'),
+    [('av'),
+     ('std'),
+     ('ts'),
+     ('reg.av'),
+     ('reg.std'),
+     ('reg.ts')]
+)
+def test_calc_object_string_time_options(dtype_out_time):
+    test_params['dtype_out_time'] = dtype_out_time
+    with pytest.raises(ValueError):
+        CalcInterface(**test_params)
 
 
 @pytest.mark.fixture
 def test_calc_object_time_options():
-    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
-    for i in range(1, 7):
+    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts', 'None']
+    for i in range(1, 8):
         for time_option in list(itertools.permutations(time_options, i)):
-            test_params['dtype_out_time'] = time_option
-            with pytest.raises(ValueError):
-                CalcInterface(**test_params)
+            if time_option != ('None',):
+                test_params['dtype_out_time'] = time_option
+                with pytest.raises(ValueError):
+                    CalcInterface(**test_params)
 
 
 @pytest.mark.parametrize(
