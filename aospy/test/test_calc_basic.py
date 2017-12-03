@@ -174,7 +174,8 @@ test_params = {
 @pytest.mark.parametrize(
     ('dtype_out_time'),
     [(None),
-     ('None')]
+     ('None'),
+     ([])]
 )
 def test_calc_object_no_time_options(dtype_out_time):
     test_params['dtype_out_time'] = dtype_out_time
