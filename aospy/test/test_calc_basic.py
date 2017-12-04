@@ -11,7 +11,7 @@ import xarray as xr
 
 from aospy.calc import Calc, CalcInterface, _add_metadata_as_attrs
 from .data.objects.examples import (
-    example_proj, example_model, example_run, precip_largescale,
+    example_proj, example_model, example_run, var_not_time_defined,
     condensation_rain, precip, sphum, globe, sahel
 )
 
@@ -162,21 +162,16 @@ class TestCalc3D(TestCalcBasic):
 
 
 test_params = {
-        'proj': example_proj,
-        'model': example_model,
-        'run': example_run,
-        'var': precip_largescale,
-        'date_range': 'default',
-        'intvl_out': 1,
+    'proj': example_proj,
+    'model': example_model,
+    'run': example_run,
+    'var': var_not_time_defined,
+    'date_range': 'default',
+    'intvl_out': 1,
 }
 
 
-@pytest.mark.parametrize(
-    ('dtype_out_time'),
-    [(None),
-     ('None'),
-     ([])]
-)
+@pytest.mark.parametrize(('dtype_out_time'), [None, 'None', []])
 def test_calc_object_no_time_options(dtype_out_time):
     test_params['dtype_out_time'] = dtype_out_time
     calc = CalcInterface(**test_params)
@@ -188,13 +183,7 @@ def test_calc_object_no_time_options(dtype_out_time):
 
 @pytest.mark.parametrize(
     ('dtype_out_time'),
-    [('av'),
-     ('std'),
-     ('ts'),
-     ('reg.av'),
-     ('reg.std'),
-     ('reg.ts')]
-)
+    ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts'])
 def test_calc_object_string_time_options(dtype_out_time):
     test_params['dtype_out_time'] = dtype_out_time
     with pytest.raises(ValueError):
@@ -229,8 +218,7 @@ def test_calc_object_time_options():
      ('', 'rain', 'vert_int',
       '(vertical integral of quantity with unspecified units)', 'rain'),
      ('m', 'rain', 'vert_int',
-      '(vertical integral of m): m kg m^-2)', 'rain')]
-)
+      '(vertical integral of m): m kg m^-2)', 'rain')])
 def test_attrs(units, description, dtype_out_vert, expected_units,
                expected_description):
     da = xr.DataArray(None)

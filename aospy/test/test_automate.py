@@ -19,7 +19,7 @@ from aospy.automate import (_get_attr_by_tag, _permuted_dicts_of_specs,
 from . import requires_pytest_catchlog
 from .data.objects import examples as lib
 from .data.objects.examples import (
-    example_proj, example_model, example_run, precip_largescale,
+    example_proj, example_model, example_run, var_not_time_defined,
     condensation_rain, convection_rain, precip, ps, sphum, globe, sahel
 )
 
@@ -145,7 +145,7 @@ def test_user_verify():
 
 @pytest.mark.parametrize(
     ('type_', 'expected'),
-    [(Var, [precip_largescale, condensation_rain, convection_rain,
+    [(Var, [var_not_time_defined, condensation_rain, convection_rain,
             precip, ps, sphum]),
      (Proj, [example_proj])])
 def test_get_all_objs_of_type(obj_lib, type_, expected):
@@ -356,11 +356,7 @@ class TestCalcSuite(object):
             assert act in expected
 
 
-@pytest.mark.parametrize(
-    'var',
-    [(precip_largescale),
-     (condensation_rain)]
-)
+@pytest.mark.parametrize('var', [var_not_time_defined, condensation_rain])
 def test_prune_invalid_time_reductions(var):
     time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
     spec = {
