@@ -10,7 +10,7 @@ import logging
 import pprint
 import traceback
 
-from .calc import Calc, CalcInterface
+from .calc import Calc, CalcInterface, _TIME_DEFINED_REDUCTIONS
 from .region import Region
 from .var import Var
 
@@ -22,7 +22,6 @@ _RUNS_STR = 'runs'
 _REGIONS_STR = 'regions'
 _VARIABLES_STR = 'variables'
 _TAG_ATTR_MODIFIERS = dict(all='', default='default_')
-_TIME_DEFINED_REDUCTIONS = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
 
 
 def _get_attr_by_tag(obj, tag, attr_name):
