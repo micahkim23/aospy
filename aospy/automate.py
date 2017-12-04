@@ -249,7 +249,7 @@ class CalcSuite(object):
 def _prune_invalid_time_reductions(spec):
     """Prune time reductions of spec with no time dimension."""
     valid_reductions = []
-    if not spec['var'].def_time and spec['dtype_out_time'] != None:
+    if not spec['var'].def_time and spec['dtype_out_time'] is not None:
         for reduction in spec['dtype_out_time']:
             if reduction not in _TIME_DEFINED_REDUCTIONS:
                 valid_reductions.append(reduction)
