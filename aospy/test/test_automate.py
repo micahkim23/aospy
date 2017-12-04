@@ -357,22 +357,21 @@ class TestCalcSuite(object):
 
 
 @pytest.mark.parametrize(
-    ('var'),
+    'var',
     [(precip_largescale),
      (condensation_rain)]
 )
 def test_prune_invalid_time_reductions(var):
-    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts', 'None']
+    time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts']
     spec = {
-        'var': var
+        'var': var,
+        'dtype_out_time': None
     }
-    for i in range(1, 8):
+    assert _prune_invalid_time_reductions(spec) == None
+    for i in range(1, len(time_options) + 1):
         for time_option in list(itertools.permutations(time_options, i)):
             spec['dtype_out_time'] = time_option
             if spec['var'].def_time:
                 assert _prune_invalid_time_reductions(spec) == time_option
             else:
-                if 'None' in time_option:
-                    assert _prune_invalid_time_reductions(spec) == ['None']
-                else:
-                    assert _prune_invalid_time_reductions(spec) == []
+                assert _prune_invalid_time_reductions(spec) == []

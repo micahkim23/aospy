@@ -179,7 +179,11 @@ test_params = {
 )
 def test_calc_object_no_time_options(dtype_out_time):
     test_params['dtype_out_time'] = dtype_out_time
-    CalcInterface(**test_params)
+    calc = CalcInterface(**test_params)
+    if isinstance(dtype_out_time, list):
+        assert calc.dtype_out_time == tuple(dtype_out_time)
+    else:
+        assert calc.dtype_out_time == tuple([dtype_out_time])
 
 
 @pytest.mark.parametrize(
@@ -197,10 +201,9 @@ def test_calc_object_string_time_options(dtype_out_time):
         CalcInterface(**test_params)
 
 
-@pytest.mark.fixture
 def test_calc_object_time_options():
     time_options = ['av', 'std', 'ts', 'reg.av', 'reg.std', 'reg.ts', 'None']
-    for i in range(1, 8):
+    for i in range(1, len(time_options) + 1):
         for time_option in list(itertools.permutations(time_options, i)):
             if time_option != ('None',):
                 test_params['dtype_out_time'] = time_option
