@@ -492,7 +492,6 @@ class Calc(object):
         if self.dtype_in_time == 'av':
             return arr
         reductions = {
-            'None': lambda xarr: xarr,
             'ts': lambda xarr: xarr,
             'av': lambda xarr: xarr.mean(internal_names.YEAR_STR),
             'std': lambda xarr: xarr.std(internal_names.YEAR_STR),
